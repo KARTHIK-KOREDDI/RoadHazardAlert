@@ -96,17 +96,17 @@ def view_hazards():
     severity = request.args.get('severity') 
     location = request.args.get('location')
     
-    query = Hazard.query
-    if h_type: 
-        query = query.filter(Hazard.hazard_type == h_type)
-    if severity: 
-        query = query.filter(Hazard.confidence == severity)
-    if location: 
-        # Search by text match in location_text
-        query = query.filter(Hazard.location_text.ilike(f"%{location}%"))
+    hazards = db_manager.get_all_hazards()
+    
+    # Filter in Python for the demo
+    if h_type:
+        hazards = [h for h in hazards if h['hazard_type'] == h_type]
+    if severity:
+        hazards = [h for h in hazards if h['confidence'] == severity]
+    if location:
+        hazards = [h for h in hazards if location.lower() in h['location_text'].lower()]
         
-    # Sort by the most recent activity (new reports/updates)
-    hazards = query.order_by(Hazard.updated_at.desc()).all()
+    hazards.sort(key=lambda x: x['updated_at'], reverse=True)
     return render_template('hazards.html', hazards=hazards, search_query=location)
 
 def notify_route_users(hazard):
@@ -239,34 +239,33 @@ def profile():
             current_user.username = new_username
             
         if new_password:
-            current_user.password_hash = generate_password_hash(new_password)
+            db_manager.update_user(current_user.username, {'password_hash': generate_password_hash(new_password)})
             
-        db.session.commit()
         flash('Operational credentials updated successfully.', 'success')
         return redirect(url_for('profile'))
         
     return render_template('profile.html')
 
-@app.route('/update_my_hazard/<int:hazard_id>', methods=['POST'])
+@app.route('/update_my_hazard/<string:hazard_id>', methods=['POST'])
 @login_required
 def update_my_hazard(hazard_id):
-    hazard = Hazard.query.get_or_404(hazard_id)
+    hazard = db_manager.get_hazard(hazard_id)
     
     # Security: Check if user is one of the reporters
-    user_report = Report.query.filter_by(hazard_id=hazard_id, user_id=current_user.id).first()
+    reports = db_manager.get_reports_for_hazard(hazard_id)
+    user_report = next((r for r in reports if r.get('user_id') == current_user.username), None)
     
     if not user_report:
         flash('Operational oversight: You are not authorized to modify this node.', 'danger')
         return redirect(url_for('profile'))
         
-    if hazard.status != 'Active':
+    if hazard['status'] != 'Active':
         flash('Access Restricted: Administrative intervention is already in progress.', 'info')
         return redirect(url_for('profile'))
         
     new_status = request.form.get('status')
     if new_status in ['Resolved', 'Active']:
-        hazard.status = new_status
-        db.session.commit()
+        db_manager.update_hazard(hazard_id, {'status': new_status})
         flash(f'Hazard status updated to {new_status} by reporter.', 'success')
         
     return redirect(url_for('profile'))

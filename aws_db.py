@@ -97,6 +97,15 @@ class DynamoDBManager:
         except Exception as e:
             print(f"SNS Error: {e}")
 
+    def update_user(self, username, updates):
+        update_expr = "set " + ", ".join(f"{k}=:{k}" for k in updates.keys())
+        attr_values = {f":{k}": v for k, v in updates.items()}
+        self.users_table.update_item(
+            Key={'username': username},
+            UpdateExpression=update_expr,
+            ExpressionAttributeValues=attr_values
+        )
+
     def create_in_app_notif(self, user_id, title, message):
         self.notifs_table.put_item(Item={
             'notif_id': str(uuid.uuid4()),
