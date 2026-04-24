@@ -129,3 +129,5 @@ class DynamoDBManager:
 
     def delete_hazard(self, h_id):
         self.hazards_table.delete_item(Key={'hazard_id': h_id})
+
+db_manager = DynamoDBManager()
