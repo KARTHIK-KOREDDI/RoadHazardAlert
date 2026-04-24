@@ -54,7 +54,7 @@
                 <tr style="border-bottom: 1px solid var(--border); transition: background 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.01)'" onmouseout="this.style.background='none'">
                     <td style="padding: 1.5rem 2rem;">
                         <div style="font-weight: 700; font-size: 1.1rem;">{{ hazard.hazard_type }}</div>
-                        <div style="font-size: 0.75rem; color: var(--text-dim);">ID: ORD-{{ 1000 + hazard.id }}</div>
+                        <div style="font-size: 0.75rem; color: var(--text-dim);">ID: ORD-{{ 1000 + (hazard.hazard_id|length) }}</div>
                     </td>
                     <td style="color: var(--text-dim);">{{ hazard.location_text }}</td>
                     <td style="font-size: 0.85rem;">{{ hazard.updated_at }}</td>

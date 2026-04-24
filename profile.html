@@ -73,7 +73,7 @@
                             <h4 style="margin: 0; color: var(--primary);">{{ route.route_name }}</h4>
                             <p style="margin: 0.5rem 0; font-size: 0.8rem; color: var(--text-dim);">{{ route.waypoints }}</p>
                         </div>
-                        <form method="POST" action="{{ url_for('delete_route', id=route.id) }}">
+                        <form method="POST" action="{{ url_for('delete_route', id=route.route_id) }}">
                             <button type="submit" style="background: none; border: 1px solid var(--accent-danger); color: var(--accent-danger); cursor: pointer; border-radius: 6px; padding: 0.3rem 0.6rem; font-size: 0.7rem;">Deactivate</button>
                         </form>
                     </div>
@@ -129,7 +129,7 @@
                                 </td>
                                 <td style="text-align: right; padding-right: 1.5rem;">
                                     {% if report.hazard.status == 'Active' %}
-                                    <form method="POST" action="{{ url_for('update_my_hazard', hazard_id=report.hazard.id) }}">
+                                    <form method="POST" action="{{ url_for('update_my_hazard', hazard_id=report.hazard.hazard_id) }}">
                                         <input type="hidden" name="status" value="Resolved">
                                         <button type="submit" style="background: none; border: 1px solid var(--accent-success); color: var(--accent-success); padding: 0.4rem 0.8rem; border-radius: 8px; font-size: 0.7rem; cursor: pointer;">Resolve</button>
                                     </form>

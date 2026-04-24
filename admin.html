@@ -74,7 +74,7 @@
                             </span>
                         </td>
                         <td>
-                            <form method="POST" action="{{ url_for('update_hazard', id=hazard.id) }}">
+                            <form method="POST" action="{{ url_for('update_hazard', id=hazard.hazard_id) }}">
                                 <select name="status" onchange="this.form.submit()" style="padding: 0.5rem; border-radius: 8px; font-size: 0.8rem; background: #0f172a; color: white; border: 1px solid var(--border); width: auto;">
                                     <option value="Active" {% if hazard.status == 'Active' %}selected{% endif %}>Active</option>
                                     <option value="Under Investigation" {% if hazard.status == 'Under Investigation' %}selected{% endif %}>Investigating</option>
@@ -83,7 +83,7 @@
                             </form>
                         </td>
                         <td style="padding-right: 2rem; text-align: right;">
-                            <form method="POST" action="{{ url_for('delete_hazard', id=hazard.id) }}">
+                            <form method="POST" action="{{ url_for('delete_hazard', id=hazard.hazard_id) }}">
                                 <button type="submit" style="background: none; border: 1px solid var(--accent-danger); color: var(--accent-danger); padding: 0.4rem 1rem; border-radius: 8px; font-size: 0.75rem; cursor: pointer;">Purge Alert</button>
                             </form>
                         </td>

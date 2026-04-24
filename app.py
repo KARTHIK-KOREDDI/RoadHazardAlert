@@ -281,12 +281,23 @@ def logout():
 def admin_dashboard():
     if not current_user.is_admin: return redirect(url_for('index'))
     all_hazards = db_manager.get_all_hazards()
+    
+    # Map for easy lookup
+    hazard_map = {h['hazard_id']: h for h in all_hazards}
+    
     total_count = len(all_hazards)
     investigating_count = len(db_manager.get_hazards_by_status('Under Investigation'))
     solved_count = len(db_manager.get_hazards_by_status('Resolved'))
     active_count = len(db_manager.get_hazards_by_status('Active'))
     
     all_reports = db_manager.get_all_reports()
+    
+    # Hydrate reports with hazard data
+    for r in all_reports:
+        r['hazard'] = hazard_map.get(r['hazard_id'], {'hazard_type': 'Unknown'})
+        # Also hydrate user if needed, but username is enough
+        r['user'] = {'username': r['user_id']} if r.get('user_id') else None
+        
     all_reports.sort(key=lambda x: x['timestamp'], reverse=True)
     detailed_reports = all_reports[:50]
     
