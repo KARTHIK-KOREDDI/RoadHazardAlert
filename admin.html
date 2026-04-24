@@ -109,7 +109,7 @@
                 <tbody>
                     {% for report in detailed_reports %}
                     <tr style="border-bottom: 1px solid var(--border);">
-                        <td style="padding: 1.5rem 2rem; color: var(--text-dim); font-size: 0.85rem;">{{ report.timestamp.strftime('%H:%M | %d %b') }}</td>
+                        <td style="padding: 1.5rem 2rem; color: var(--text-dim); font-size: 0.85rem;">{{ report.timestamp }}</td>
                         <td>{% if report.user %}{{ report.user.username }}{% else %}ANONYMOUS{% endif %}</td>
                         <td>{{ report.hazard.hazard_type }}</td>
                         <td style="font-size: 0.85rem; max-width: 300px;">{{ report.description or 'No notes provided.' }}</td>
@@ -147,7 +147,7 @@
             <div style="background: rgba(255,255,255,0.02); border-radius: 16px; padding: 1rem;">
                 {% for log in anonymous_reports[:15] %}
                 <div style="padding: 1rem; border-bottom: 1px solid var(--border); font-size: 0.9rem; color: var(--text-dim);">
-                    Incoming data chunk for <strong>{{ log.hazard.hazard_type }}</strong> at {{ log.timestamp.strftime('%H:%M') }}. Log trace: {{ log.description }}
+                    Incoming data chunk for <strong>{{ log.hazard.hazard_type }}</strong> at {{ log.timestamp }}. Log trace: {{ log.description }}
                 </div>
                 {% endfor %}
             </div>

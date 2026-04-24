@@ -30,7 +30,7 @@
                         <div style="padding: 1.5rem; border-bottom: 1px solid var(--border); background: {{ 'rgba(255,255,255,0.02)' if not notif.is_read else 'none' }}">
                             <div style="font-weight: 700; color: var(--primary); font-size: 0.9rem; margin-bottom: 0.3rem;">{{ notif.title }}</div>
                             <div style="font-size: 0.85rem; line-height: 1.5; color: var(--text-dim);">{{ notif.message }}</div>
-                            <div style="font-size: 0.7rem; color: #475569; margin-top: 0.5rem;">{{ notif.timestamp.strftime('%H:%M | %d %b') }}</div>
+                            <div style="font-size: 0.7rem; color: #475569; margin-top: 0.5rem;">{{ notif.timestamp }}</div>
                         </div>
                         {% endfor %}
                     {% else %}
@@ -122,7 +122,7 @@
                         <tbody>
                             {% for report in current_user.my_reports | sort(attribute='timestamp', reverse=True) %}
                             <tr style="border-bottom: 1px solid var(--border);">
-                                <td style="padding: 1rem 1.5rem; font-size: 0.85rem; color: var(--text-dim);">{{ report.timestamp.strftime('%H:%M | %d %b') }}</td>
+                                <td style="padding: 1rem 1.5rem; font-size: 0.85rem; color: var(--text-dim);">{{ report.timestamp }}</td>
                                 <td style="font-weight: 700;">{{ report.hazard.hazard_type }}</td>
                                 <td style="font-size: 0.8rem; color: {{ 'var(--accent-success)' if report.hazard.status == 'Resolved' else 'var(--accent-warning)' if report.hazard.status == 'Under Investigation' else 'var(--accent-danger)' }}; font-weight: 700;">
                                     {{ report.hazard.status }}

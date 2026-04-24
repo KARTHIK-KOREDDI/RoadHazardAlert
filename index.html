@@ -97,7 +97,7 @@
                 <span style="background: rgba(129, 140, 248, 0.1); color: var(--primary); font-weight: 800; font-size: 0.75rem; padding: 0.5rem 1rem; border-radius: 50px; border: 1px solid rgba(129, 140, 248, 0.2);">
                     {{ hazard.hazard_type.upper() }}
                 </span>
-                <span style="font-size: 0.8rem; color: var(--text-dim);">{{ hazard.created_at.strftime('%H:%M') }}</span>
+                <span style="font-size: 0.8rem; color: var(--text-dim);">{{ hazard.created_at }}</span>
             </div>
             <h4 style="font-size: 1.25rem; margin-bottom: 0.5rem; font-weight: 700;">{{ hazard.location_text }}</h4>
             <div style="display: flex; align-items: center; gap: 0.5rem;">

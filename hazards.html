@@ -57,7 +57,7 @@
                         <div style="font-size: 0.75rem; color: var(--text-dim);">ID: ORD-{{ 1000 + hazard.id }}</div>
                     </td>
                     <td style="color: var(--text-dim);">{{ hazard.location_text }}</td>
-                    <td style="font-size: 0.85rem;">{{ hazard.updated_at.strftime('%H:%M | %d %b') }}</td>
+                    <td style="font-size: 0.85rem;">{{ hazard.updated_at }}</td>
                     <td>
                         <span style="display: inline-block; padding: 0.3rem 0.7rem; border-radius: 6px; font-size: 0.65rem; font-weight: 800; 
                              {% if hazard.confidence == 'High' %} background: rgba(244, 63, 94, 0.1); color: var(--accent-danger); border: 1px solid rgba(244, 63, 94, 0.2); 
