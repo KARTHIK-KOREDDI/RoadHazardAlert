@@ -97,6 +97,17 @@ class DynamoDBManager:
         except Exception as e:
             print(f"SNS Error: {e}")
 
+    def subscribe_email_to_sns(self, email):
+        try:
+            self.sns.subscribe(
+                TopicArn=self.topic_arn,
+                Protocol='email',
+                Endpoint=email
+            )
+            print(f"SNS Subscription request sent to {email}")
+        except Exception as e:
+            print(f"SNS Subscription Error: {e}")
+
     def update_user(self, username, updates):
         update_expr = "set " + ", ".join(f"{k}=:{k}" for k in updates.keys())
         attr_values = {f":{k}": v for k, v in updates.items()}
@@ -115,6 +126,26 @@ class DynamoDBManager:
             'timestamp': get_ist(),
             'is_read': False
         })
+
+    def clear_user_notifications(self, user_id):
+        notifs = self.notifs_table.query(
+            IndexName='UserIndex',
+            KeyConditionExpression=Key('user_id').eq(user_id)
+        ).get('Items', [])
+        for n in notifs:
+            self.notifs_table.delete_item(Key={'notif_id': n['notif_id']})
+
+    def create_route(self, user_id, route_name, waypoints):
+        self.routes_table.put_item(Item={
+            'route_id': str(uuid.uuid4()),
+            'user_id': user_id,
+            'route_name': route_name,
+            'waypoints': waypoints,
+            'timestamp': get_ist()
+        })
+
+    def delete_route(self, route_id):
+        self.routes_table.delete_item(Key={'route_id': route_id})
 
     def get_hazards_by_status(self, status):
         response = self.hazards_table.scan(FilterExpression=Attr('status').eq(status))

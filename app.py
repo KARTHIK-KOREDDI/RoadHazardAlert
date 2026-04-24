@@ -110,35 +110,34 @@ def view_hazards():
     return render_template('hazards.html', hazards=hazards, search_query=location)
 
 def notify_route_users(hazard):
-    all_routes = UserRoute.query.all()
+    # This checks if the new hazard location matches any user's travel routes
+    all_users = db_manager.users_table.scan().get('Items', [])
     notified_count = 0
     
-    for route in all_routes:
-        waypoints = [w.strip().lower() for w in route.waypoints.split(',')]
-        hazard_loc = hazard.location_text.lower()
-        is_match = any(w in hazard_loc for w in waypoints)
-        
-        if is_match:
-            # Persistent In-App Notification
-            notif = Notification(
-                user_id=route.user_id,
-                title=f"Route Alert: {hazard.hazard_type}",
-                message=f"A new {hazard.hazard_type} has been reported in {hazard.location_text}, which intersects with your {route.route_name} travel channel."
-            )
-            db.session.add(notif)
+    for u in all_users:
+        routes = db_manager.get_routes_for_user(u['username'])
+        for route in routes:
+            waypoints = [w.strip().lower() for w in route['waypoints'].split(',')]
+            hazard_loc = hazard['location_text'].lower()
+            is_match = any(w in hazard_loc for w in waypoints)
             
-            # [AWS SNS INTEGRATION]
-            print(f"\n[AWS SNS + INBOX ALERT] Target: {route.user.username} | Route: {route.route_name}")
-            notified_count += 1
-            
-    db.session.commit()
+            if is_match:
+                # Persistent In-App Notification
+                db_manager.create_in_app_notif(
+                    u['username'],
+                    f"Route Alert: {hazard['hazard_type']}",
+                    f"A new {hazard['hazard_type']} has been reported in {hazard['location_text']}, which intersects with your {route['route_name']} travel channel."
+                )
+                print(f"[INTERNAL NOTIFICATION] User {u['username']} alerted about route match.")
+                notified_count += 1
+                
     return notified_count
 
 @app.route('/notifications/clear', methods=['POST'])
+@app.route('/notifications/clear', methods=['POST'])
 @login_required
 def clear_notifications():
-    Notification.query.filter_by(user_id=current_user.id).delete()
-    db.session.commit()
+    db_manager.clear_user_notifications(current_user.username)
     return redirect(url_for('profile'))
 
 @app.route('/add_route', methods=['POST'])
@@ -148,21 +147,16 @@ def add_route():
     waypoints = request.form.get('waypoints')
     
     if name and waypoints:
-        new_route = UserRoute(user_id=current_user.id, route_name=name, waypoints=waypoints)
-        db.session.add(new_route)
-        db.session.commit()
+        db_manager.create_route(current_user.username, name, waypoints)
         flash(f'Travel Channel "{name}" activated. System is now monitoring this sector.', 'success')
         
     return redirect(url_for('profile'))
 
-@app.route('/delete_route/<int:id>', methods=['POST'])
+@app.route('/delete_route/<string:id>', methods=['POST'])
 @login_required
 def delete_route(id):
-    route = UserRoute.query.get_or_404(id)
-    if route.user_id == current_user.id:
-        db.session.delete(route)
-        db.session.commit()
-        flash('Monitoring for this sector deactivated.', 'info')
+    db_manager.delete_route(id)
+    flash('Monitoring for this sector deactivated.', 'info')
     return redirect(url_for('profile'))
 
 @app.route('/report', methods=['GET', 'POST'])
@@ -203,12 +197,17 @@ def register():
         password = request.form.get('password')
         
         if db_manager.get_user(username):
-            flash('Username already registered.', 'danger')
-            return redirect(url_for('register'))
+            flash('This alias is already assigned to another operative.', 'danger')
+        else:
+            hashed_password = generate_password_hash(password)
+            db_manager.create_user(username, email, hashed_password)
             
-        db_manager.create_user(username, email, generate_password_hash(password))
-        flash('Registration successful. You can now login.', 'success')
-        return redirect(url_for('login'))
+            # [AWS SNS INTEGRATION]
+            # Automatically request subscription for the new user
+            db_manager.subscribe_email_to_sns(email)
+            
+            flash('Identity verified. Welcome to the network, Operative.', 'success')
+            return redirect(url_for('login'))
     return render_template('register.html')
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -233,10 +232,11 @@ def profile():
         new_password = request.form.get('password')
         
         if new_username != current_user.username:
-            if User.query.filter_by(username=new_username).first():
+            if db_manager.get_user(new_username):
                 flash('Username already in use.', 'danger')
                 return redirect(url_for('profile'))
-            current_user.username = new_username
+            # Note: Changing username in DynamoDB requires creating a new item and deleting old one
+            # For this demo, we'll just update other fields
             
         if new_password:
             db_manager.update_user(current_user.username, {'password_hash': generate_password_hash(new_password)})
