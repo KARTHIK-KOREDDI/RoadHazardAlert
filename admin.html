@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+
+{% block title %}Operational Headquarter | Admin{% endblock %}
+
+{% block content %}
+<div class="animate-up">
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 4rem;">
+        <div>
+            <h1 class="title-xl" style="font-size: 3rem;">Operational <span class="text-reveal">Logistics</span></h1>
+            <p style="color: var(--text-dim); font-size: 1.1rem;">Command center for road safety and infrastructure resolution.</p>
+        </div>
+        <div style="background: rgba(45, 212, 191, 0.1); padding: 1rem 2rem; border-radius: 16px; border: 1px solid var(--accent-success);">
+            <div style="font-size: 0.7rem; font-weight: 800; color: var(--accent-success); text-transform: uppercase;">Engagement Meter</div>
+            <div style="font-size: 1.5rem; font-weight: 800;">{{ daily_visits }} Daily Visits</div>
+        </div>
+    </div>
+
+    <!-- Stats Dashboard -->
+    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-bottom: 4rem;">
+        <div class="glass-card" style="padding: 1.5rem;">
+            <div style="color: var(--text-dim); font-size: 0.8rem; font-weight: 700; text-transform: uppercase;">Total Stream</div>
+            <div style="font-size: 2.5rem; font-weight: 800; margin: 0.5rem 0;">{{ total_count }}</div>
+            <div style="font-size: 0.75rem; color: var(--primary);">Aggregated Hazards</div>
+        </div>
+        <div class="glass-card" style="padding: 1.5rem; border-top: 4px solid var(--accent-warning);">
+            <div style="color: var(--text-dim); font-size: 0.8rem; font-weight: 700; text-transform: uppercase;">In-Field Review</div>
+            <div style="font-size: 2.5rem; font-weight: 800; margin: 0.5rem 0; color: var(--accent-warning);">{{ investigating_count }}</div>
+            <div style="font-size: 0.75rem; color: var(--text-dim);">Under Investigation</div>
+        </div>
+         <div class="glass-card" style="padding: 1.5rem; border-top: 4px solid var(--accent-success);">
+            <div style="color: var(--text-dim); font-size: 0.8rem; font-weight: 700; text-transform: uppercase;">Resolved Nodes</div>
+            <div style="font-size: 2.5rem; font-weight: 800; margin: 0.5rem 0; color: var(--accent-success);">{{ solved_count }}</div>
+            <div style="font-size: 0.75rem; color: var(--text-dim);">Successfully Secured</div>
+        </div>
+        <div class="glass-card" style="padding: 1.5rem; border-top: 4px solid var(--accent-danger);">
+            <div style="color: var(--text-dim); font-size: 0.8rem; font-weight: 700; text-transform: uppercase;">Critical Alerts</div>
+            <div style="font-size: 2.5rem; font-weight: 800; margin: 0.5rem 0; color: var(--accent-danger);">{{ active_count }}</div>
+            <div style="font-size: 0.75rem; color: var(--text-dim);">Status: Active</div>
+        </div>
+    </div>
+
+    <!-- Tabbed Navigation -->
+    <div style="display: flex; gap: 2rem; border-bottom: 1px solid var(--border); margin-bottom: 3rem; padding-bottom: 0.5rem;">
+        <button onclick="showTab('hazards')" class="tab-btn active" id="btn-hazards">Hazard Management</button>
+        <button onclick="showTab('reports')" class="tab-btn" id="btn-reports">Intelligence Feed</button>
+        <button onclick="showTab('users')" class="tab-btn" id="btn-users">Verified Reporters</button>
+        <button onclick="showTab('anonymous')" class="tab-btn" id="btn-anonymous">Anonymous Data</button>
+    </div>
+
+    <!-- Tab Contents -->
+    <div id="tab-hazards" class="tab-content active">
+        <div class="glass-card" style="padding: 0; overflow: auto; max-height: 600px;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead style="background: rgba(255,255,255,0.02); text-align: left; font-size: 0.75rem; text-transform: uppercase; color: var(--text-dim);">
+                    <tr>
+                        <th style="padding: 1.5rem 2rem;">Hazard Type</th>
+                        <th>Location</th>
+                        <th>Confidence Index</th>
+                        <th>Change Status</th>
+                        <th style="padding-right: 2rem; text-align: right;">Operations</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for hazard in hazards %}
+                    <tr style="border-bottom: 1px solid var(--border);">
+                        <td style="padding: 1.5rem 2rem; font-weight: 700;">{{ hazard.hazard_type }}</td>
+                        <td>{{ hazard.location_text }}</td>
+                        <td>
+                             <span style="display: inline-block; padding: 0.4rem 0.8rem; border-radius: 6px; font-size: 0.7rem; font-weight: 800; 
+                             {% if hazard.confidence == 'High' %} background: rgba(244, 63, 94, 0.1); color: var(--accent-danger); border: 1px solid rgba(244, 63, 94, 0.2); 
+                             {% elif hazard.confidence == 'Medium' %} background: rgba(251, 191, 36, 0.1); color: var(--accent-warning); border: 1px solid rgba(251, 191, 36, 0.2); 
+                             {% else %} background: rgba(45, 212, 191, 0.1); color: var(--accent-success); border: 1px solid rgba(45, 212, 191, 0.2); {% endif %}">
+                                {{ hazard.confidence }} ({{ hazard.report_count }})
+                            </span>
+                        </td>
+                        <td>
+                            <form method="POST" action="{{ url_for('update_hazard', id=hazard.id) }}">
+                                <select name="status" onchange="this.form.submit()" style="padding: 0.5rem; border-radius: 8px; font-size: 0.8rem; background: #0f172a; color: white; border: 1px solid var(--border); width: auto;">
+                                    <option value="Active" {% if hazard.status == 'Active' %}selected{% endif %}>Active</option>
+                                    <option value="Under Investigation" {% if hazard.status == 'Under Investigation' %}selected{% endif %}>Investigating</option>
+                                    <option value="Resolved" {% if hazard.status == 'Resolved' %}selected{% endif %}>Resolved</option>
+                                </select>
+                            </form>
+                        </td>
+                        <td style="padding-right: 2rem; text-align: right;">
+                            <form method="POST" action="{{ url_for('delete_hazard', id=hazard.id) }}">
+                                <button type="submit" style="background: none; border: 1px solid var(--accent-danger); color: var(--accent-danger); padding: 0.4rem 1rem; border-radius: 8px; font-size: 0.75rem; cursor: pointer;">Purge Alert</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="tab-reports" class="tab-content" style="display: none;">
+        <div class="glass-card" style="padding: 0; overflow: auto;">
+             <table style="width: 100%; border-collapse: collapse;">
+                <thead style="background: rgba(255,255,255,0.02); text-align: left; font-size: 0.75rem; text-transform: uppercase; color: var(--text-dim);">
+                    <tr>
+                        <th style="padding: 1.5rem 2rem;">Time (IST)</th>
+                        <th>Reporter</th>
+                        <th>Hazard Type</th>
+                        <th>Intelligence Notes</th>
+                        <th style="padding-right: 2rem; text-align: right;">Reliability</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for report in detailed_reports %}
+                    <tr style="border-bottom: 1px solid var(--border);">
+                        <td style="padding: 1.5rem 2rem; color: var(--text-dim); font-size: 0.85rem;">{{ report.timestamp.strftime('%H:%M | %d %b') }}</td>
+                        <td>{% if report.user %}{{ report.user.username }}{% else %}ANONYMOUS{% endif %}</td>
+                        <td>{{ report.hazard.hazard_type }}</td>
+                        <td style="font-size: 0.85rem; max-width: 300px;">{{ report.description or 'No notes provided.' }}</td>
+                        <td style="padding-right: 2rem; text-align: right;">
+                            <span style="color: {{ 'var(--accent-success)' if report.is_trusted else 'var(--accent-warning)' }}; font-weight: 700; font-size: 0.75rem;">
+                                {{ 'VERIFIED' if report.is_trusted else 'UNVERIFIED' }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="tab-users" class="tab-content" style="display: none;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;">
+            {% for user in trusted_reporters %}
+            <div class="glass-card" style="padding: 2rem; display: flex; align-items: center; gap: 1.5rem;">
+                <div style="width: 60px; height: 60px; background: var(--gradient-1); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">👤</div>
+                <div>
+                    <h3 style="font-size: 1.25rem;">{{ user.username }}</h3>
+                    <p style="color: var(--text-dim); font-size: 0.85rem;">{{ user.email }}</p>
+                    <span style="font-size: 0.7rem; color: var(--accent-success); font-weight: 800; text-transform: uppercase;">Guardian Tier</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div id="tab-anonymous" class="tab-content" style="display: none;">
+        <div class="glass-card">
+            <h3 style="margin-bottom: 2rem;">External Intelligence Logs</h3>
+            <p style="color: var(--text-dim); margin-bottom: 2rem;">Total of {{ anonymous_reports|length }} reports from unverified sessions.</p>
+            <div style="background: rgba(255,255,255,0.02); border-radius: 16px; padding: 1rem;">
+                {% for log in anonymous_reports[:15] %}
+                <div style="padding: 1rem; border-bottom: 1px solid var(--border); font-size: 0.9rem; color: var(--text-dim);">
+                    Incoming data chunk for <strong>{{ log.hazard.hazard_type }}</strong> at {{ log.timestamp.strftime('%H:%M') }}. Log trace: {{ log.description }}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .tab-btn {
+        background: none;
+        border: none;
+        color: var(--text-dim);
+        font-weight: 700;
+        font-size: 1.1rem;
+        cursor: pointer;
+        padding-bottom: 0.5rem;
+        position: relative;
+    }
+    .tab-btn.active { color: white; }
+    .tab-btn.active::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0; width: 100%; height: 2px;
+        background: var(--gradient-1);
+    }
+</style>
+
+<script>
+    function showTab(id) {
+        document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
+        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+        document.getElementById('tab-' + id).style.display = 'block';
+        document.getElementById('btn-' + id).classList.add('active');
+    }
+</script>
+{% endblock %}

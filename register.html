@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}Register{% endblock %}
+
+{% block content %}
+<div class="animate-fade" style="max-width: 450px; margin: 4rem auto;">
+    <h1 style="text-align: center;" class="text-gradient">Join the Community</h1>
+    <p style="text-align: center; color: var(--text-muted); margin-bottom: 2.5rem;">Create an account to become a trusted reporter.</p>
+    
+    <div class="card">
+        <form method="POST">
+            <label>Username</label>
+            <input type="text" name="username" required placeholder="Pick a username">
+            
+            <label>Email Address</label>
+            <input type="email" name="email" required placeholder="email@example.com">
+            
+            <label>Password</label>
+            <input type="password" name="password" required placeholder="••••••••">
+            
+            <button type="submit" class="btn-primary" style="margin-top: 1rem;">Create Account</button>
+            
+            <p style="text-align: center; margin-top: 1.5rem; font-size: 0.9rem; color: var(--text-muted);">
+                Already registered? <a href="{{ url_for('login') }}" style="color: var(--primary); text-decoration: none;">Login here</a>
+            </p>
+        </form>
+    </div>
+</div>
+{% endblock %}

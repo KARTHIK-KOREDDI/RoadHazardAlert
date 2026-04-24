@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}Advanced AI-Powered Road Monitoring{% endblock %}
+
+{% block content %}
+<!-- Sophisticated Hero -->
+<div class="animate-up" style="display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 4rem; align-items: center; margin-bottom: 8rem;">
+    <div>
+        <h1 class="title-xl">
+            Smarter Roads.<br>
+            <span class="text-reveal">Safer Journeys.</span>
+        </h1>
+        <p style="font-size: 1.25rem; color: var(--text-dim); margin-bottom: 3rem; max-width: 600px; line-height: 1.7;">
+            Empowering modern infrastructure with real-time community intelligence. Join thousands of trusted reporters fixing the world's roads, one report at a time.
+        </p>
+        <div style="display: flex; gap: 1.5rem;">
+            <a href="{{ url_for('report_hazard') }}" class="btn-cta" style="padding: 1.25rem 2.5rem; font-size: 1.1rem; border-radius: 16px;">Initiate Report</a>
+            <a href="{{ url_for('view_hazards') }}" style="color: white; text-decoration: none; display: flex; align-items: center; font-weight: 600; gap: 0.5rem; border: 1px solid var(--border); padding: 1.25rem 2.5rem; border-radius: 16px; backdrop-filter: blur(10px);">
+                Monitor Hazards &rarr;
+            </a>
+        </div>
+    </div>
+    
+    <div style="position: relative;">
+        <!-- Sophisticated Hero Image -->
+        <div style="width: 100%; aspect-ratio: 4/5; border-radius: 30px; overflow: hidden; border: 1px solid var(--border); box-shadow: 0 50px 100px -20px rgba(0,0,0,0.5); background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);">
+            <img src="{{ url_for('static', filename='images/hero_pro.png') }}" 
+                 onerror="this.style.display='none'"
+                 style="width: 100%; height: 100%; object-fit: cover;">
+        </div>
+        <!-- Floating Stat Block -->
+        <div style="position: absolute; bottom: -30px; left: -30px; background: rgba(15,23,42,0.9); backdrop-filter: blur(20px); border: 1px solid var(--border); padding: 1.5rem 2rem; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.4);">
+            <div style="font-size: 0.8rem; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 1px;">Live Network</div>
+            <div style="font-size: 1.5rem; font-weight: 800;">{{ total_hazards }} Active Incidents</div>
+        </div>
+    </div>
+</div>
+
+<!-- Dynamic Feature Grid -->
+<div style="margin-bottom: 10rem;">
+    <div style="text-align: center; margin-bottom: 5rem;">
+        <h2 style="font-family: 'Outfit', sans-serif; font-size: 2.5rem; font-weight: 800;">Technology for <span class="text-reveal">Civil Stability</span></h2>
+        <p style="color: var(--text-dim);">Global-tier features for local-level safety.</p>
+    </div>
+    
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem;">
+        <div class="glass-card animate-up" style="animation-delay: 0.1s;">
+            <div style="width: 50px; height: 50px; background: rgba(129, 140, 248, 0.1); border: 1px solid var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 2rem; font-size: 1.5rem;">🛰️</div>
+            <h3 style="margin-bottom: 1rem; font-size: 1.5rem;">Precision Clustering</h3>
+            <p style="color: var(--text-dim); line-height: 1.6;">Our spatial algorithms intelligently group regional reports into singular high-value hazard logs, reducing system noise.</p>
+        </div>
+        <div class="glass-card animate-up" style="animation-delay: 0.2s;">
+            <div style="width: 50px; height: 50px; background: rgba(45, 212, 191, 0.1); border: 1px solid var(--accent-success); border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 2rem; font-size: 1.5rem;">🛡️</div>
+            <h3 style="margin-bottom: 1rem; font-size: 1.5rem;">Trust Verification</h3>
+            <p style="color: var(--text-dim); line-height: 1.6;">Registered reporters contribute to a distributed 'Trust Index', elevating the reliability of our critical road alerts.</p>
+        </div>
+        <div class="glass-card animate-up" style="animation-delay: 0.3s;">
+            <div style="width: 50px; height: 50px; background: rgba(244, 63, 94, 0.1); border: 1px solid var(--accent-danger); border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 2rem; font-size: 1.5rem;">📡</div>
+            <h3 style="margin-bottom: 1rem; font-size: 1.5rem;">SNS Integration</h3>
+            <p style="color: var(--text-dim); line-height: 1.6;">Immediate automated outbound notifications when hazard severity cross-references with high-density traffic zones.</p>
+        </div>
+    </div>
+</div>
+
+<!-- Sophisticated Stats (Bottom) -->
+<div class="glass-card animate-up" style="background: linear-gradient(to right, rgba(15,23,42,1), rgba(30,41,59,0.5)); border: none; padding: 5rem; margin-bottom: 6rem;">
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 4rem; text-align: left;">
+        <div>
+            <div style="font-size: 4rem; font-weight: 800; font-family: 'Outfit', sans-serif;">{{ total_hazards }}</div>
+            <div style="color: var(--primary); font-weight: 700; text-transform: uppercase; letter-spacing: 2px;">Incidents Processed</div>
+        </div>
+        <div>
+            <div style="font-size: 4rem; font-weight: 800; font-family: 'Outfit', sans-serif;">{{ total_visits }}</div>
+            <div style="color: var(--primary); font-weight: 700; text-transform: uppercase; letter-spacing: 2px;">System Interactions</div>
+        </div>
+        <div>
+            <div style="font-size: 4rem; font-weight: 800; font-family: 'Outfit', sans-serif;">{{ trusted_reporters }}</div>
+            <div style="color: var(--primary); font-weight: 700; text-transform: uppercase; letter-spacing: 2px;">Verified Guardians</div>
+        </div>
+    </div>
+</div>
+
+<!-- Feed Section -->
+<div style="margin-bottom: 6rem;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 3rem;">
+        <div>
+            <h2 style="font-size: 2.5rem; font-weight: 800; font-family: 'Outfit', sans-serif;">Live Monitoring <span class="text-reveal">Feed</span></h2>
+            <p style="color: var(--text-dim);">Real-time events detected within the last 48 hours.</p>
+        </div>
+        <a href="{{ url_for('view_hazards') }}" style="color: var(--primary); text-decoration: none; font-weight: 700; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">Access Full Log &rarr;</a>
+    </div>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 2rem;">
+        {% for hazard in recent_hazards %}
+        <div class="glass-card" style="padding: 2rem; border-radius: 24px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <span style="background: rgba(129, 140, 248, 0.1); color: var(--primary); font-weight: 800; font-size: 0.75rem; padding: 0.5rem 1rem; border-radius: 50px; border: 1px solid rgba(129, 140, 248, 0.2);">
+                    {{ hazard.hazard_type.upper() }}
+                </span>
+                <span style="font-size: 0.8rem; color: var(--text-dim);">{{ hazard.created_at.strftime('%H:%M') }}</span>
+            </div>
+            <h4 style="font-size: 1.25rem; margin-bottom: 0.5rem; font-weight: 700;">{{ hazard.location_text }}</h4>
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <div style="width: 8px; height: 8px; border-radius: 50%; background: {% if hazard.confidence == 'High' %}var(--accent-danger){% elif hazard.confidence == 'Medium' %}var(--accent-warning){% else %}var(--accent-success){% endif %};"></div>
+                <span style="font-size: 0.9rem; color: var(--text-dim);">Status: <strong>{{ hazard.confidence }} Confidence</strong></span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

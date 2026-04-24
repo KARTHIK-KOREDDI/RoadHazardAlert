@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block title %}Infrastructure Incident Report{% endblock %}
+
+{% block content %}
+<div class="animate-up" style="max-width: 800px; margin: 0 auto;">
+    <div style="text-align: center; margin-bottom: 4rem;">
+        <h1 class="title-xl" style="font-size: 3rem;">Report an <span class="text-reveal">Incident</span></h1>
+        <p style="color: var(--text-dim); font-size: 1.1rem;">Provide detailed coordinate-based data for our monitoring network.</p>
+    </div>
+    
+    <div class="glass-card" style="padding: 3.5rem;">
+        <form method="POST" action="{{ url_for('report_hazard') }}">
+            <div class="input-group">
+                <label class="input-label">Incident Category</label>
+                <select name="hazard_type" required>
+                    <option value="" disabled selected>Select from library...</option>
+                    <option value="Pothole">Pothole / Surface Damage</option>
+                    <option value="Accident">Vehicle Accident</option>
+                    <option value="Traffic">Severe Traffic Congestion</option>
+                    <option value="Waterlogging">Waterlogging / Flooding</option>
+                    <option value="Construction">Infrastructure Maintenance</option>
+                    <option value="Other">Uncategorized Event</option>
+                </select>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-bottom: 2rem; align-items: flex-end;">
+                <div>
+                    <label class="input-label">Primary Location Descriptor</label>
+                    <input type="text" name="location_text" id="location_text" placeholder="e.g. Skyline Blvd & Central" required>
+                </div>
+                <div>
+                    <button type="button" onclick="getLocation()" class="btn-cta" style="width: 100%; white-space: nowrap; font-size: 0.85rem; padding: 1.1rem; border-radius: 16px;">
+                        Detect Coordinates
+                    </button>
+                </div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
+                <div>
+                    <label class="input-label">Latitude Coordinate</label>
+                    <input type="number" step="any" name="lat" id="lat" placeholder="Auto-detecting...">
+                </div>
+                <div>
+                    <label class="input-label">Longitude Coordinate</label>
+                    <input type="number" step="any" name="lon" id="lon" placeholder="Auto-detecting...">
+                </div>
+            </div>
+            
+            <div class="input-group">
+                <label class="input-label">Contextual Details</label>
+                <textarea name="description" rows="4" placeholder="Briefly describe the situation..."></textarea>
+            </div>
+            
+            {% if current_user.is_authenticated %}
+                <div style="background: rgba(45, 212, 191, 0.05); padding: 1.5rem; border-radius: 16px; margin-bottom: 2.5rem; border: 1px solid rgba(45, 212, 191, 0.2); display: flex; align-items: center; gap: 1rem;">
+                    <div style="font-size: 1.5rem;">🛡️</div>
+                    <p style="color: var(--accent-success); font-size: 0.9rem; font-weight: 600; margin: 0;">
+                        Authenticated as <strong>@{{ current_user.username }}</strong>. This report will be tagged with a high Reliability Index.
+                    </p>
+                </div>
+            {% else %}
+                <div style="background: rgba(251, 191, 36, 0.05); padding: 1.5rem; border-radius: 16px; margin-bottom: 2.5rem; border: 1px solid rgba(251, 191, 36, 0.2); display: flex; align-items: center; gap: 1rem;">
+                    <div style="font-size: 1.5rem;">⚠️</div>
+                    <div>
+                        <p style="color: var(--accent-warning); font-size: 0.9rem; font-weight: 600; margin-bottom: 0.25rem;">
+                            Anonymous Submission (Unverified)
+                        </p>
+                        <a href="{{ url_for('login') }}" style="color: var(--primary); font-size: 0.8rem; text-decoration: none; font-weight: 700;">Login for faster verification &rarr;</a>
+                    </div>
+                </div>
+            {% endif %}
+            
+            <button type="submit" class="btn-cta" style="width: 100%; padding: 1.25rem; font-size: 1.1rem; border-radius: 16px;">Transmit Intelligence</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    function getLocation() {
+        if (navigator.geolocation) {
+            const btn = event.target;
+            const originalText = btn.innerText;
+            btn.innerText = "Synchronizing...";
+            btn.style.opacity = "0.7";
+            
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    document.getElementById('lat').value = position.coords.latitude;
+                    document.getElementById('lon').value = position.coords.longitude;
+                    btn.innerText = "Fixed ✓";
+                    btn.style.opacity = "1";
+                    btn.style.background = "var(--accent-success)";
+                },
+                (error) => {
+                    alert("Coordinate retrieval failed: " + error.message);
+                    btn.innerText = originalText;
+                    btn.style.opacity = "1";
+                }
+            );
+        } else {
+            alert("Geolocation services not supported.");
+        }
+    }
+</script>
+{% endblock %}

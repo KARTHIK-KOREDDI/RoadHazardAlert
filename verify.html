@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}Verify Intelligence Account{% endblock %}
+
+{% block content %}
+<div class="animate-up" style="max-width: 450px; margin: 4rem auto;">
+    <h1 style="text-align: center;" class="text-reveal">Identity Verification</h1>
+    <p style="text-align: center; color: var(--text-dim); margin-bottom: 2.5rem;">
+        We've simulated sending a 6-digit verification code to <strong>{{ email }}</strong>. 
+        Please check your system terminal (or console) to retrieve it.
+    </p>
+    
+    <div class="glass-card">
+        <form method="POST" action="{{ url_for('verify') }}">
+            <input type="hidden" name="email" value="{{ email }}">
+            <div class="input-group">
+                <label class="input-label">Verification Code</label>
+                <input type="text" name="code" required placeholder="000000" style="text-align: center; font-size: 2rem; letter-spacing: 12px; font-weight: 800;">
+            </div>
+            
+            <button type="submit" class="btn-cta" style="width: 100%; border-radius: 16px; padding: 1.25rem;">Verify & Initialize Account</button>
+            
+            <p style="text-align: center; margin-top: 2rem; font-size: 0.85rem; color: var(--text-dim);">
+                Didn't get the code? <a href="{{ url_for('register') }}" style="color: var(--primary); text-decoration: none;">Restart Registration</a>
+            </p>
+        </form>
+    </div>
+</div>
+{% endblock %}

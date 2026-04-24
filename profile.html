@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block title %}Operative Profile | RoadAlert{% endblock %}
+
+{% block content %}
+<div class="animate-up" style="max-width: 1100px; margin: 4rem auto;">
+    <div style="display: flex; gap: 2rem; align-items: center; margin-bottom: 4rem;">
+        <div style="width: 100px; height: 100px; background: var(--gradient-1); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 3rem;">👤</div>
+        <div style="flex-grow: 1;">
+            <h1 class="text-reveal" style="font-size: 2.5rem;">{{ current_user.username }}</h1>
+            <p style="color: var(--text-dim);">Identity Status: <span style="color: var(--accent-success); font-weight: 800;">VERIFIED GUARDIAN</span></p>
+        </div>
+        
+        <!-- Toggle-based Message Button -->
+        <div style="position: relative;">
+            <button onclick="toggleInbox()" class="btn-cta" style="background: {{ 'var(--accent-danger)' if current_user.notifications else 'rgba(255,255,255,0.05)' }}; border: 1px solid var(--border); padding: 0.8rem 1.5rem; position: relative;">
+                Messages {% if current_user.notifications %}<span style="background: white; color: var(--accent-danger); padding: 0.1rem 0.4rem; border-radius: 4px; font-size: 0.7rem; margin-left: 0.5rem;">{{ current_user.notifications|length }}</span>{% endif %}
+            </button>
+            
+            <div id="inbox-dropdown" style="display: none; position: absolute; right: 0; top: 60px; width: 400px; background: #0f172a; border: 1px solid var(--border); border-radius: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); z-index: 1000; overflow: hidden;">
+                <div style="padding: 1.5rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+                    <h3 style="margin: 0; font-size: 1.1rem;">Intelligence Inbox</h3>
+                    <form method="POST" action="{{ url_for('clear_notifications') }}">
+                        <button type="submit" style="background: none; border: none; color: var(--text-dim); cursor: pointer; font-size: 0.75rem;">Clear All</button>
+                    </form>
+                </div>
+                <div style="max-height: 400px; overflow-y: auto;">
+                    {% if current_user.notifications %}
+                        {% for notif in current_user.notifications | sort(attribute='timestamp', reverse=True) %}
+                        <div style="padding: 1.5rem; border-bottom: 1px solid var(--border); background: {{ 'rgba(255,255,255,0.02)' if not notif.is_read else 'none' }}">
+                            <div style="font-weight: 700; color: var(--primary); font-size: 0.9rem; margin-bottom: 0.3rem;">{{ notif.title }}</div>
+                            <div style="font-size: 0.85rem; line-height: 1.5; color: var(--text-dim);">{{ notif.message }}</div>
+                            <div style="font-size: 0.7rem; color: #475569; margin-top: 0.5rem;">{{ notif.timestamp.strftime('%H:%M | %d %b') }}</div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div style="padding: 3rem; text-align: center; color: var(--text-dim);">
+                            <p>No new intelligence reports.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Travel Routes Monitoring Section -->
+    <div style="margin-bottom: 4rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+            <h2 style="font-size: 1.5rem;">Monitored <span class="text-reveal">Travel Channels</span></h2>
+            <p style="font-size: 0.85rem; color: var(--text-dim);">SNS & Inbox alerts optimized for these sectors.</p>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+             <div class="glass-card">
+                <form method="POST" action="{{ url_for('add_route') }}">
+                    <div class="input-group">
+                        <label class="input-label">Channel Name</label>
+                        <input type="text" name="route_name" required placeholder="Daily Commute">
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">Operational Zones (Keywords)</label>
+                        <textarea name="waypoints" required placeholder="Mumbai, High Street" style="height: 100px;"></textarea>
+                    </div>
+                    <button type="submit" class="btn-cta" style="width: 100%; border-radius: 12px; padding: 0.8rem;">Initialize Monitoring</button>
+                </form>
+            </div>
+
+            <div class="glass-card" style="background: rgba(15,23,42,0.5);">
+                {% if current_user.my_routes %}
+                    {% for route in current_user.my_routes %}
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; padding: 1.5rem; border-bottom: 1px solid var(--border);">
+                        <div>
+                            <h4 style="margin: 0; color: var(--primary);">{{ route.route_name }}</h4>
+                            <p style="margin: 0.5rem 0; font-size: 0.8rem; color: var(--text-dim);">{{ route.waypoints }}</p>
+                        </div>
+                        <form method="POST" action="{{ url_for('delete_route', id=route.id) }}">
+                            <button type="submit" style="background: none; border: 1px solid var(--accent-danger); color: var(--accent-danger); cursor: pointer; border-radius: 6px; padding: 0.3rem 0.6rem; font-size: 0.7rem;">Deactivate</button>
+                        </form>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div style="text-align: center; color: var(--text-dim); padding: 3rem;">
+                        <p>No active travel channels.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Original history and settings -->
+    <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 3rem;">
+        <div>
+            <h3 style="margin-bottom: 2rem;">Security Cipher</h3>
+            <div class="glass-card">
+                <form method="POST" action="{{ url_for('profile') }}">
+                    <div class="input-group">
+                        <label class="input-label">Update Alias</label>
+                        <input type="text" name="username" value="{{ current_user.username }}" required>
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">New Password</label>
+                        <input type="password" name="password" placeholder="Leave blank">
+                    </div>
+                    <button type="submit" class="btn-cta" style="width: 100%; border-radius: 12px; padding: 0.8rem;">Update Account</button>
+                </form>
+            </div>
+        </div>
+
+        <div>
+            <h3 style="margin-bottom: 2rem;">Operational History</h3>
+            {% if current_user.my_reports %}
+                <div class="glass-card" style="padding: 0; overflow: hidden;">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead style="background: rgba(255,255,255,0.02); text-align: left; font-size: 0.75rem; text-transform: uppercase;">
+                            <tr>
+                                <th style="padding: 1rem 1.5rem;">Time</th>
+                                <th>Incident</th>
+                                <th>State</th>
+                                <th style="text-align: right; padding-right: 1.5rem;">Override</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for report in current_user.my_reports | sort(attribute='timestamp', reverse=True) %}
+                            <tr style="border-bottom: 1px solid var(--border);">
+                                <td style="padding: 1rem 1.5rem; font-size: 0.85rem; color: var(--text-dim);">{{ report.timestamp.strftime('%H:%M | %d %b') }}</td>
+                                <td style="font-weight: 700;">{{ report.hazard.hazard_type }}</td>
+                                <td style="font-size: 0.8rem; color: {{ 'var(--accent-success)' if report.hazard.status == 'Resolved' else 'var(--accent-warning)' if report.hazard.status == 'Under Investigation' else 'var(--accent-danger)' }}; font-weight: 700;">
+                                    {{ report.hazard.status }}
+                                </td>
+                                <td style="text-align: right; padding-right: 1.5rem;">
+                                    {% if report.hazard.status == 'Active' %}
+                                    <form method="POST" action="{{ url_for('update_my_hazard', hazard_id=report.hazard.id) }}">
+                                        <input type="hidden" name="status" value="Resolved">
+                                        <button type="submit" style="background: none; border: 1px solid var(--accent-success); color: var(--accent-success); padding: 0.4rem 0.8rem; border-radius: 8px; font-size: 0.7rem; cursor: pointer;">Resolve</button>
+                                    </form>
+                                    {% else %}
+                                    <span style="font-size: 0.7rem; color: var(--text-dim);">LOCKED</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="glass-card" style="text-align: center; padding: 3rem; color: var(--text-dim);">
+                    <p>No operational logs.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleInbox() {
+        const inbox = document.getElementById('inbox-dropdown');
+        inbox.style.display = inbox.style.display === 'none' ? 'block' : 'none';
+    }
+</script>
+{% endblock %}

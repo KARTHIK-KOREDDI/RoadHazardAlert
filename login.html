@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'System Administration' if is_admin else 'Intelligence Login' }}{% endblock %}
+
+{% block content %}
+<div class="animate-up" style="max-width: 450px; margin: 4rem auto;">
+    <h1 style="text-align: center;" class="text-reveal">{{ 'Administration' if is_admin else 'Identify Yourself' }}</h1>
+    <p style="text-align: center; color: var(--text-dim); margin-bottom: 2.5rem;">
+        {{ 'Secure portal for system monitoring and hazard resolution.' if is_admin else 'Access your trusted road intelligence account.' }}
+    </p>
+    
+    <div class="glass-card" style="border-top: 4px solid {{ 'var(--accent-warning)' if is_admin else 'var(--primary)' }};">
+        <form method="POST">
+            <div class="input-group">
+                <label class="input-label">Ident-Number / Username</label>
+                <input type="text" name="username" required placeholder="Enter username">
+            </div>
+            
+            <div class="input-group">
+                <label class="input-label">Security Cipher / Password</label>
+                <input type="password" name="password" required placeholder="••••••••">
+            </div>
+            
+            <button type="submit" class="btn-cta" style="width: 100%; border-radius: 16px; padding: 1rem; {{ 'background: var(--accent-warning);' if is_admin }}">
+                {{ 'Execute Admin Login' if is_admin else 'Authorize Access' }}
+            </button>
+            
+            {% if not is_admin %}
+                <p style="text-align: center; margin-top: 1.5rem; font-size: 0.9rem; color: var(--text-dim);">
+                    New operative? <a href="{{ url_for('register') }}" style="color: var(--primary); text-decoration: none;">Register for clearance</a>
+                </p>
+            {% else %}
+                <p style="text-align: center; margin-top: 1.5rem; font-size: 0.9rem; color: var(--text-dim);">
+                    Standard user? <a href="{{ url_for('login') }}" style="color: var(--primary); text-decoration: none;">Return to public portal</a>
+                </p>
+            {% endif %}
+        </form>
+    </div>
+</div>
+{% endblock %}

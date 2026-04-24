@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}Explore Hazards | RoadAlert Intelligence{% endblock %}
+
+{% block content %}
+<div class="animate-up">
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 4rem;">
+        <div>
+            <h1 class="title-xl" style="font-size: 3rem;">Risk <span class="text-reveal">Manifest</span></h1>
+            <p style="color: var(--text-dim);">Global monitoring of infrastructure anomalies and safety disruptions.</p>
+        </div>
+        
+        <!-- Premium Search Bar -->
+        <form method="GET" style="display: flex; gap: 0.5rem; background: rgba(255,255,255,0.03); padding: 0.5rem; border-radius: 20px; border: 1px solid var(--border); width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+            <input type="text" name="location" placeholder="Search operational zone (e.g. Mumbai, High Street)..." 
+                   value="{{ search_query or '' }}"
+                   style="border: none; background: none; margin-bottom: 0; font-size: 0.9rem; flex-grow: 1;">
+            <button type="submit" class="btn-cta" style="padding: 0.6rem 1.5rem; border-radius: 14px; font-size: 0.8rem;">Initialize Search</button>
+        </form>
+    </div>
+
+    <!-- Filters Row -->
+    <div style="display: flex; gap: 1rem; margin-bottom: 3rem;">
+        <div class="glass-card" style="padding: 0.75rem 1.5rem; display: flex; align-items: center; gap: 1rem; border-radius: 50px;">
+            <span style="font-size: 0.75rem; font-weight: 800; color: var(--text-dim); text-transform: uppercase;">Filters:</span>
+            <a href="{{ url_for('view_hazards') }}" style="color: var(--primary); text-decoration: none; font-size: 0.85rem; font-weight: 700;">Reset All</a>
+            <span style="color: var(--border);">|</span>
+            <div style="display: flex; gap: 0.8rem; flex-wrap: wrap;">
+                <a href="{{ url_for('view_hazards', type='Pothole') }}" class="tag-link">Potholes</a>
+                <a href="{{ url_for('view_hazards', type='Accident') }}" class="tag-link">Accidents</a>
+                <a href="{{ url_for('view_hazards', type='Traffic') }}" class="tag-link">Traffic</a>
+                <a href="{{ url_for('view_hazards', type='Waterlogging') }}" class="tag-link">Waterlogging</a>
+                <a href="{{ url_for('view_hazards', type='Construction') }}" class="tag-link">Construction</a>
+                <a href="{{ url_for('view_hazards', type='Roadblock') }}" class="tag-link">Roadblock</a>
+                <a href="{{ url_for('view_hazards', type='Animal') }}" class="tag-link">Animal on Road</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results Table -->
+    <div class="glass-card" style="padding: 0; overflow: hidden;">
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead style="background: rgba(255,255,255,0.02); text-align: left; font-size: 0.75rem; text-transform: uppercase; color: var(--text-dim);">
+                <tr>
+                    <th style="padding: 1.5rem 2rem;">Hazard Signature</th>
+                    <th>Intelligence Node (Location)</th>
+                    <th>Updated (IST)</th>
+                    <th>Confidence</th>
+                    <th style="padding-right: 2rem; text-align: right;">Current Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for hazard in hazards %}
+                <tr style="border-bottom: 1px solid var(--border); transition: background 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.01)'" onmouseout="this.style.background='none'">
+                    <td style="padding: 1.5rem 2rem;">
+                        <div style="font-weight: 700; font-size: 1.1rem;">{{ hazard.hazard_type }}</div>
+                        <div style="font-size: 0.75rem; color: var(--text-dim);">ID: ORD-{{ 1000 + hazard.id }}</div>
+                    </td>
+                    <td style="color: var(--text-dim);">{{ hazard.location_text }}</td>
+                    <td style="font-size: 0.85rem;">{{ hazard.updated_at.strftime('%H:%M | %d %b') }}</td>
+                    <td>
+                        <span style="display: inline-block; padding: 0.3rem 0.7rem; border-radius: 6px; font-size: 0.65rem; font-weight: 800; 
+                             {% if hazard.confidence == 'High' %} background: rgba(244, 63, 94, 0.1); color: var(--accent-danger); border: 1px solid rgba(244, 63, 94, 0.2); 
+                             {% elif hazard.confidence == 'Medium' %} background: rgba(251, 191, 36, 0.1); color: var(--accent-warning); border: 1px solid rgba(251, 191, 36, 0.2); 
+                             {% else %} background: rgba(45, 212, 191, 0.1); color: var(--accent-success); border: 1px solid rgba(45, 212, 191, 0.2); {% endif %}">
+                                {{ hazard.confidence }} DATA
+                        </span>
+                    </td>
+                    <td style="padding-right: 2rem; text-align: right;">
+                        <div style="display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; font-weight: 700; color: {{ 'var(--accent-success)' if hazard.status == 'Resolved' else 'var(--accent-warning)' if hazard.status == 'Under Investigation' else 'var(--accent-danger)' }};">
+                            <span style="width: 8px; height: 8px; background: currentColor; border-radius: 50%; display: inline-block;"></span>
+                            {{ hazard.status }}
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" style="padding: 4rem; text-align: center; color: var(--text-dim);">
+                        No anomalies detected in the specified regional perimeter.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<style>
+    .tag-link {
+        text-decoration: none;
+        color: var(--text-dim);
+        font-size: 0.8rem;
+        font-weight: 600;
+        padding: 0.3rem 0.8rem;
+        border-radius: 20px;
+        transition: all 0.3s;
+    }
+    .tag-link:hover {
+        background: rgba(255,255,255,0.05);
+        color: white;
+    }
+</style>
+{% endblock %}
