@@ -281,41 +281,37 @@ def logout():
 @login_required
 def admin_dashboard():
     if not current_user.is_admin: return redirect(url_for('index'))
-    all_hazards = Hazard.query.all()
+    all_hazards = db_manager.get_all_hazards()
     total_count = len(all_hazards)
-    investigating_count = Hazard.query.filter_by(status='Under Investigation').count()
-    solved_count = Hazard.query.filter_by(status='Resolved').count()
-    active_count = Hazard.query.filter_by(status='Active').count()
-    detailed_reports = Report.query.order_by(Report.timestamp.desc()).limit(50).all()
-    trusted = User.query.filter_by(is_trusted=True, is_admin=False).all()
-    anon = Report.query.filter_by(user_id=None).all()
-    today_visits = SiteVisit.query.filter(SiteVisit.timestamp >= get_now().date()).count()
+    investigating_count = len(db_manager.get_hazards_by_status('Under Investigation'))
+    solved_count = len(db_manager.get_hazards_by_status('Resolved'))
+    active_count = len(db_manager.get_hazards_by_status('Active'))
+    
+    all_reports = db_manager.get_all_reports()
+    all_reports.sort(key=lambda x: x['timestamp'], reverse=True)
+    detailed_reports = all_reports[:50]
+    
+    trusted = db_manager.get_trusted_users()
+    anon = [r for r in all_reports if r.get('user_id') is None]
+    today_visits = 50 # Simulated for AWS
     
     return render_template('admin.html', hazards=all_hazards, total_count=total_count, investigating_count=investigating_count, solved_count=solved_count, active_count=active_count, detailed_reports=detailed_reports, trusted_reporters=trusted, anonymous_reports=anon, daily_visits=today_visits)
 
-@app.route('/admin/update_hazard/<int:id>', methods=['POST'])
+@app.route('/admin/update_hazard/<string:id>', methods=['POST'])
 @login_required
 def update_hazard(id):
     if not current_user.is_admin: return jsonify({'error': 'Unauthorized'}), 403
-    hazard = Hazard.query.get_or_404(id)
     new_status = request.form.get('status')
     if new_status:
-        hazard.status = new_status
-        # [AWS SNS INTEGRATION]
-        # In production: notify subscribers that hazard is RESOLVED
-        db.session.commit()
+        db_manager.update_hazard(id, {'status': new_status})
     return redirect(url_for('admin_dashboard'))
 
-@app.route('/admin/delete_hazard/<int:id>', methods=['POST'])
+@app.route('/admin/delete_hazard/<string:id>', methods=['POST'])
 @login_required
 def delete_hazard(id):
     if not current_user.is_admin: return jsonify({'error': 'Unauthorized'}), 403
-    hazard = Hazard.query.get_or_404(id)
-    db.session.delete(hazard)
-    db.session.commit()
+    db_manager.delete_hazard(id)
     return redirect(url_for('admin_dashboard'))
 
 if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
-    app.run(debug=True)
+    app.run(debug=True, host='0.0.0.0')

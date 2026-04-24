@@ -106,3 +106,17 @@ class DynamoDBManager:
             'timestamp': get_ist(),
             'is_read': False
         })
+
+    def get_hazards_by_status(self, status):
+        response = self.hazards_table.scan(FilterExpression=Attr('status').eq(status))
+        return response.get('Items', [])
+
+    def get_all_reports(self):
+        return self.reports_table.scan().get('Items', [])
+
+    def get_trusted_users(self):
+        response = self.users_table.scan(FilterExpression=Attr('is_trusted').eq(True) & Attr('is_admin').eq(False))
+        return response.get('Items', [])
+
+    def delete_hazard(self, h_id):
+        self.hazards_table.delete_item(Key={'hazard_id': h_id})
